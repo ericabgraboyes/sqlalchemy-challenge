@@ -103,5 +103,32 @@ def precipitation():
 
     return jsonify(dt_dict)
 
+########################################################
+# Flask Routes: Station list
+########################################################
+@app.route("/api/v1.0/stations")
+def station():
+
+    # Create session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of station and station name"""
+
+    # run query, store results in variable
+    stations = session.query(Measurement.station, Station.name).distinct() .\
+        filter(Measurement.station == Station.station) .\
+        order_by(asc(Station.name))
+    
+    session.close()
+    
+    # create blank list to display station +  name
+    station_list = []
+
+    for s in stations:
+        station_list.append(s[0] + ":  " + s[1])
+
+    # create JSON result
+    return jsonify(station_list)
+
 if __name__ == '__main__':
     app.run(debug=True)
