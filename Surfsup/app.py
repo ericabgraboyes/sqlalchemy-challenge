@@ -68,3 +68,35 @@ def landing():
     )
 
 ########################################################
+
+# Flask Routes: Precipitation 
+########################################################
+@app.route("/api/v1.0/precipitation")
+def precipitation():
+    # Create session (link) from Python to the DB
+    session = Session(engine)
+
+    """ return precipitation for last 12 months relativte to most recent date"""
+
+    # query to find latest date
+    last_dt = session.query(Measurement.date).distinct().\
+        order_by(desc(Measurement.date)).first()
+        
+    last_dt = str(last_dt)
+    last_dt = re.sub("'|,", "", last_dt)
+    last_dt = dt.datetime.strptime(last_dt, '(%Y-%m-%d)')
+    start_dt = dt.date(last_dt.year, last_dt.month, last_dt.day) - dt.timedelta(days=365)
+
+    # query precipitation over last 12 months
+    precepitation = session.query(Measurement.date. Measurement.prcp) .\
+                filter(Measurement.date >= start_dt) .\
+                filter(Measurement.prcp != 'null') .\
+                order_by(desc(Measurement.date)).all()
+    
+    session.close()
+
+    # create dictionary - key = date, value = prcp        
+    dt_dict = {}
+
+    for p in precipitation:
+        append_value(dt_dict, p.date, p.prcp)
