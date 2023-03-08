@@ -79,17 +79,17 @@ def precipitation():
     """ return precipitation for last 12 months relativte to most recent date"""
 
     # query to find latest date
-    # last_dt = session.query(Measurement.date).distinct().\
-    #     order_by(desc(Measurement.date)).first()
+    last_dt = session.query(Measurement.date).distinct().\
+        order_by(desc(Measurement.date)).first()
         
-    # last_dt = str(last_dt)
-    # last_dt = re.sub("'|,", "", last_dt)
-    # last_dt = dt.datetime.strptime(last_dt, '(%Y-%m-%d)')
-    # start_dt = dt.date(last_dt.year, last_dt.month, last_dt.day) - dt.timedelta(days=365)
+    last_dt = str(last_dt)
+    last_dt = re.sub("'|,", "", last_dt)
+    last_dt = dt.datetime.strptime(last_dt, '(%Y-%m-%d)')
+    start_dt = dt.date(last_dt.year, last_dt.month, last_dt.day) - dt.timedelta(days=365)
 
     # query precipitation over last 12 months
     precipitation = session.query(Measurement.date, Measurement.prcp) .\
-                filter(Measurement.date >= ('2016-08-23')) .\
+                filter(Measurement.date >= start_dt) .\
                 filter(Measurement.prcp != 'null') .\
                 order_by(desc(Measurement.date)).all()
     
