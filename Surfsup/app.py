@@ -177,5 +177,44 @@ def most_activity():
     
     return jsonify(tobs_list)
 
+########################################################
+# Flask Routes: start 
+########################################################
+@app.route('/api/v1.0/datesearch/<startDate>')
+def start(startDate):
+
+    # create session object
+    session = Session(engine)
+
+    """Return min, max and avg temp for all dates on or after startDate """
+
+    # check if startDate matches ANY measurement date
+    valid = session.query(exists().where(Measurement.date == startDate)).scalar()
+
+    if valid:
+
+        # run query, store results in variable
+        temps_since =  (session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), \
+                                func.max(Measurement.tobs))
+                        .filter(func.strftime("%Y-%m-%d", Measurement.date) >= startDate)
+                        .group_by(Measurement.date)
+                        .all())
+        session.close()    
+
+        # Create JSON results for temperature list - round average function to 1 digit
+        temps = []     
+
+        for ts in temps_since:
+            date_dict = {}
+            date_dict["Date"] = ts[0]
+            date_dict["Temp: Low"] = ts[1]
+            date_dict["Temp: Avg"] = round(ts[2],1)
+            date_dict["Temp: Max"] = ts[3]
+            temps.append(date_dict)
+        return jsonify(temps)
+
+    return jsonify({"error": f"Input Date {startDate} not valid. Please select a new start date"}), 404
+
+
 if __name__ == '__main__':
     app.run(debug=True)
