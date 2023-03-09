@@ -68,11 +68,11 @@ def landing():
     )
 
 ########################################################
-
 # Flask Routes: Precipitation 
 ########################################################
 @app.route("/api/v1.0/precipitation")
 def precipitation():
+
     # Create session (link) from Python to the DB
     session = Session(engine)
 
@@ -167,7 +167,7 @@ def most_activity():
     
     session.close()    
 
-    # Create JSON Results
+    # unpack query result, write to list with date: temp
     tobs_list = []
 
     for t in tobs:
@@ -215,6 +215,37 @@ def start(startDate):
 
     return jsonify({"error": f"Input Date {startDate} not valid. Please select a new start date"}), 404
 
+########################################################
+# Flask Routes: start/end
+########################################################
+@app.route('/api/v1.0/daterange/<startDate>/<endDate>')
+def startEnd(startDate, endDate):
+
+    # create session object
+    session = Session(engine)
+
+    """Return min, max and avg temp for all dates on or after startDate / on or before endDate """
+
+    # run query, store results in variable
+    temps_between =  (session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), \
+                              func.max(Measurement.tobs))
+                       .filter(func.strftime("%Y-%m-%d", Measurement.date) >= startDate) \
+                       .filter(func.strftime("%Y-%m-%d", Measurement.date) <= endDate) \
+                       .group_by(Measurement.date)
+                       .all())
+    session.close()    
+
+    # Create JSON
+    startstop = []                       
+    
+    for tb in temps_between:
+        date_dict = {}
+        date_dict["Date"] = tb[0]
+        date_dict["Temp: Low"] = tb[1]
+        date_dict["Temp: Avg"] = round(tb[2],1)
+        date_dict["Temp: Max"] = tb[3]
+        startstop.append(date_dict)
+    return jsonify(startstop)
 
 if __name__ == '__main__':
     app.run(debug=True)
