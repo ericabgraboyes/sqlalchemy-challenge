@@ -34,7 +34,7 @@
     * "/api/v1.0/precipitation" - returns JSON representation of dictionary (date = key, prcp = value)
     * "/api/v1.0/stations" - return a JSON list of stations from the dataset
     * "api/v1.0/tobs" - return JSON list of temperaturs for the prior year, for the most active station
-    * "/api/v1.0/datesearch/'<start>'" - return JSON list of min, max, and avgerage temperatures on or after a specified date
+    * "/api/v1.0/datesearch/<!--start-->" - return JSON list of min, max, and avgerage temperatures on or after a specified date
         * user will enter desired start date in the form of (YYYY-MM-DD) as dynamic aspect of URL
-    * "/api/v1.0/daterange/'<start>'/'<end>'" - return JSON list of min, max, and avgerage temperatures for specified date range
+    * "/api/v1.0/daterange/<!--start-->/'<!--end-->" - return JSON list of min, max, and avgerage temperatures for specified date range
         * query should return dates inclusive of start and end dates
