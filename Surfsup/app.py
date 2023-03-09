@@ -129,5 +129,53 @@ def station():
     # create JSON result
     return jsonify(station_list)
 
+########################################################
+# Flask Routes: tobs 
+########################################################
+@app.route("/api/v1.0/tobs")
+def most_activity():
+
+    # create session object
+    session = Session(engine)
+
+    """Return last year of temperature for station USC00519281"""
+    
+    # (a) query station with most activity - use to filter date range
+    most_station = (session.query(Measurement.station, func.count(Measurement.station))
+                             .group_by(Measurement.station)
+                             .order_by(func.count(Measurement.station).desc())
+                             .first())
+    
+    station_filter = str(most_station[0])
+
+    # (b) query latest date based on station with most activity"
+    station_last_dt = session.query(Measurement.date).distinct().\
+        filter(Measurement.station == station_filter).\
+        order_by(desc(Measurement.date)).first()
+
+    # find value of start_date, 1 year prior to station_last_dt    
+    station_last_dt = str(station_last_dt)
+    station_last_dt = re.sub("'|,", "", station_last_dt)
+    station_last_dt = dt.datetime.strptime(station_last_dt, '(%Y-%m-%d)')
+    station_start_dt = dt.date(station_last_dt.year, station_last_dt.month, station_last_dt.day) - dt.timedelta(days=365)
+
+    # (c) query temperature filter on active station and date range 
+    tobs = session.query(Measurement.station, Measurement.date, Measurement.tobs)\
+            .filter(Measurement.date >= station_start_dt)\
+            .filter(Measurement.station == station_filter)\
+            .all()
+    
+    session.close()    
+
+    # Create JSON Results
+    tobs_list = []
+
+    for t in tobs:
+        tobs_list.append(t[1] + ": " + str(t[2])) 
+ 
+    tobs_list.sort(reverse=True)
+    
+    return jsonify(tobs_list)
+
 if __name__ == '__main__':
     app.run(debug=True)
