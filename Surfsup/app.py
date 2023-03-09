@@ -112,20 +112,19 @@ def station():
     # Create session (link) from Python to the DB
     session = Session(engine)
 
-    """Return a list of station and station name"""
+    """Return a list of station numbers / IDs """
 
     # run query, store results in variable
-    stations = session.query(Measurement.station, Station.name).distinct() .\
-        filter(Measurement.station == Station.station) .\
-        order_by(asc(Station.name))
+    stations = session.query(Measurement.station).distinct() .\
+        order_by(asc(Measurement.station))
     
     session.close()
     
-    # create blank list to display station +  name
+    # unpack query object into list
     station_list = []
 
     for s in stations:
-        station_list.append(s[0] + ":  " + s[1])
+        station_list.append(s.station)
 
     # create JSON result
     return jsonify(station_list)
